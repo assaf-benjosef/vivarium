@@ -1,27 +1,15 @@
 import puppeteer from "puppeteer-core";
 
 const CHROMIUM_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium";
-const TARGET_URL = "http://localhost:3000";
+const DEFAULT_URL = "http://localhost:3000";
 
 /**
- * Creates an MCP server config for the screenshot tool.
- * The agent calls this via mcp__terrarium__screenshot.
- */
-export function createScreenshotServer() {
-  return {
-    command: "node",
-    args: ["/app/dist/agent/screenshot-server.js"],
-    env: {
-      PUPPETEER_EXECUTABLE_PATH: CHROMIUM_PATH,
-    },
-  };
-}
-
-/**
- * Take a screenshot of localhost:3000.
+ * Take a screenshot of a URL (defaults to localhost:3000).
  * Returns base64-encoded PNG.
  */
-export async function takeScreenshot(): Promise<string> {
+export async function takeScreenshot(url?: string): Promise<string> {
+  const targetUrl = url || DEFAULT_URL;
+
   const browser = await puppeteer.launch({
     executablePath: CHROMIUM_PATH,
     headless: true,
@@ -36,7 +24,7 @@ export async function takeScreenshot(): Promise<string> {
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 800 });
-    await page.goto(TARGET_URL, { waitUntil: "networkidle0", timeout: 10000 });
+    await page.goto(targetUrl, { waitUntil: "networkidle0", timeout: 10000 });
 
     const screenshot = await page.screenshot({ encoding: "base64" });
     return screenshot as string;
