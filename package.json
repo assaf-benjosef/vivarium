@@ -1,0 +1,27 @@
+{
+  "name": "terrarium",
+  "version": "0.1.0",
+  "description": "A curated Docker environment + Agent Skills that turns an AI agent into a personal app developer you talk to on Telegram.",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.0",
+    "grammy": "^1.35.0",
+    "puppeteer-core": "^24.0.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
