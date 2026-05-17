@@ -21,10 +21,18 @@ async function main() {
 
   // Copy skills into workspace if not present
   if (!existsSync(`${WORKSPACE}/.claude/skills`)) {
-    execSync(`mkdir -p ${WORKSPACE}/.claude && cp -r /app/skills/* ${WORKSPACE}/.claude/skills/`, {
+    execSync(`mkdir -p ${WORKSPACE}/.claude/skills && cp -r /app/skills/* ${WORKSPACE}/.claude/skills/`, {
       stdio: "ignore",
     });
     console.log("[terrarium] Skills installed to /workspace/.claude/skills/");
+  }
+
+  // Copy CLAUDE.md to workspace root if not present (SDK loads it from here)
+  if (!existsSync(`${WORKSPACE}/CLAUDE.md`)) {
+    execSync(`cp /app/workspace-template/CLAUDE.md ${WORKSPACE}/CLAUDE.md`, {
+      stdio: "ignore",
+    });
+    console.log("[terrarium] CLAUDE.md installed to /workspace/");
   }
 
   // Run auto-start script if it exists

@@ -16,6 +16,7 @@ COPY package*.json ./
 RUN npm ci --production
 COPY dist/ ./dist/
 COPY skills/ ./skills/
+COPY workspace-template/ ./workspace-template/
 
 VOLUME /workspace
 EXPOSE 3000
