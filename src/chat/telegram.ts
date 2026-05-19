@@ -33,11 +33,22 @@ export class TelegramChat implements ChatProvider {
       const chatId = ctx.chat.id;
       const text = ctx.message.text;
 
-      // Show typing indicator
+      // Keep "typing..." visible for the entire agent run (Telegram expires it after ~5s)
+      const typingInterval = setInterval(async () => {
+        try {
+          await ctx.api.sendChatAction(chatId, "typing");
+        } catch {
+          // Ignore — best effort
+        }
+      }, 4000);
+
+      // Send initial typing indicator
       await ctx.api.sendChatAction(chatId, "typing");
 
       try {
         const response = await this.runner.run(text, chatId);
+
+        clearInterval(typingInterval);
 
         // Send text response (split if too long for Telegram)
         if (response.text) {
@@ -52,6 +63,7 @@ export class TelegramChat implements ChatProvider {
           await this.sendImage(chatId, response.screenshot, "📸 Here's how it looks");
         }
       } catch (err) {
+        clearInterval(typingInterval);
         console.error("[telegram] Error handling message:", err);
         await ctx.reply("Something went wrong on my end. Let me try again in a moment.");
       }

@@ -10,6 +10,15 @@ const AUTO_SAVE_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
 async function main() {
   const config = loadConfig();
 
+  // Configure git identity for the container
+  try {
+    execSync('git config --global user.name "Terry" && git config --global user.email "terry@terrarium.local"', {
+      stdio: "ignore",
+    });
+  } catch {
+    // May already be configured
+  }
+
   // Initialize git in workspace if needed
   if (!existsSync(`${WORKSPACE}/.git`)) {
     execSync(`git init && git add -A && git commit -m "Initial commit" --allow-empty`, {

@@ -14,5 +14,5 @@ if git tag -l "$NAME" | grep -q .; then
     exit 1
 fi
 
-git tag -a "$NAME" -m "Snapshot: $NAME ($(date -Iseconds))"
+git tag -a "$NAME" -m "Snapshot: $NAME ($(date '+%Y-%m-%d %H:%M:%S'))"
 echo "✅ Snapshot '$NAME' created successfully"
