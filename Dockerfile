@@ -1,3 +1,14 @@
+FROM node:22-slim AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY tsconfig.json ./
+COPY src/ ./src/
+RUN npx tsc
+
+# ---
+
 FROM node:22-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -13,8 +24,8 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --production
-COPY dist/ ./dist/
+RUN npm ci --omit=dev
+COPY --from=builder /app/dist/ ./dist/
 COPY skills/ ./skills/
 COPY workspace-template/ ./workspace-template/
 
