@@ -3,11 +3,25 @@ import type { Config } from "../config.js";
 import { z } from "zod";
 import { takeScreenshot } from "./tools.js";
 
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname } from "node:path";
+
 const WORKSPACE = "/workspace";
+const SESSION_FILE = `${WORKSPACE}/.terrarium/session.json`;
+
+export type AgentEvent = 
+  | { type: "text"; text: string }
+  | { type: "screenshot"; buffer: Buffer };
 
 export interface AgentResponse {
   text: string;
   screenshot?: Buffer;
+  usage?: { input_tokens: number; output_tokens: number };
+}
+
+interface SessionState {
+  sessionId?: string;
+  totalCostUsd: number;
 }
 
 // Define the screenshot tool using the SDK's tool() helper
@@ -41,13 +55,50 @@ const screenshotServer = createSdkMcpServer({
 
 export class AgentRunner {
   private config: Config;
-  private sessionId?: string;
+  private state: SessionState;
 
   constructor(config: Config) {
     this.config = config;
+    this.state = this.loadState();
   }
 
-  async run(userMessage: string, _chatId: number): Promise<AgentResponse> {
+  private loadState(): SessionState {
+    try {
+      if (existsSync(SESSION_FILE)) {
+        return JSON.parse(readFileSync(SESSION_FILE, "utf-8"));
+      }
+    } catch (err) {
+      console.warn("[agent] Failed to load session state", err);
+    }
+    return { totalCostUsd: 0 };
+  }
+
+  private saveState() {
+    try {
+      mkdirSync(dirname(SESSION_FILE), { recursive: true });
+      writeFileSync(SESSION_FILE, JSON.stringify(this.state, null, 2));
+    } catch (err) {
+      console.warn("[agent] Failed to save session state", err);
+    }
+  }
+
+  public clearSession() {
+    this.state = { totalCostUsd: 0 };
+    this.saveState();
+  }
+
+  public getStatus() {
+    return {
+      sessionId: this.state.sessionId,
+      totalCostUsd: this.state.totalCostUsd
+    };
+  }
+
+  async run(
+    userMessage: string,
+    _chatId: number,
+    onEvent?: (event: AgentEvent) => void
+  ): Promise<AgentResponse> {
     let fullText = "";
     let screenshot: Buffer | undefined;
 
@@ -66,12 +117,22 @@ export class AgentRunner {
         terrarium: screenshotServer,
       },
       maxTurns: this.config.maxTurns,
+      env: {
+        ...process.env,
+        ANTHROPIC_API_KEY: this.config.anthropicApiKey,
+        CLAUDE_CONFIG_DIR: `${WORKSPACE}/.terrarium/claude_config`,
+      },
+      stderr: (data: string) => {
+        console.error("[agent:stderr]", data);
+      },
     };
 
     // Resume session if we have one for this chat
-    if (this.sessionId) {
-      options.resume = this.sessionId;
+    if (this.state.sessionId) {
+      options.resume = this.state.sessionId;
     }
+
+    console.log(`\n[user] 👤 ${userMessage}`);
 
     const response = query({
       prompt: userMessage,
@@ -83,17 +144,49 @@ export class AgentRunner {
       if (message.type === "system" && "subtype" in message) {
         const sys = message as any;
         if (sys.subtype === "init" && sys.data?.session_id) {
-          this.sessionId = sys.data.session_id;
+          if (this.state.sessionId !== sys.data.session_id) {
+            this.state.sessionId = sys.data.session_id;
+            this.saveState();
+          }
         }
       }
 
-      // Capture assistant text
+      // Capture assistant text and log thoughts/tools
       if (message.type === "assistant") {
         const assistant = message as any;
         if (assistant.message?.content) {
           for (const block of assistant.message.content) {
             if (block.type === "text") {
               fullText += block.text;
+              if (block.text.trim()) {
+                const textChunk = block.text.trim();
+                console.log(`[agent:text] 🤖 ${textChunk}`);
+                if (onEvent) onEvent({ type: "text", text: textChunk });
+              }
+            } else if (block.type === "thinking") {
+              console.log(`[agent:thought] ${block.thinking}`);
+            } else if (block.type === "tool_use") {
+              console.log(`[agent:tool] 🛠️  ${block.name}(${JSON.stringify(block.input)})`);
+            }
+          }
+        }
+      }
+
+      // Capture screenshot from tool results
+      if (message.type === "user") {
+        const userMsg = message as any;
+        if (userMsg.message?.content) {
+          for (const block of userMsg.message.content) {
+            if (block.type === "tool_result" && block.tool_use_id) {
+               if (Array.isArray(block.content)) {
+                 for (const c of block.content) {
+                   if (c.type === "image" && c.data) {
+                     const buffer = Buffer.from(c.data, "base64");
+                     screenshot = buffer;
+                     if (onEvent) onEvent({ type: "screenshot", buffer });
+                   }
+                 }
+               }
             }
           }
         }
@@ -102,8 +195,9 @@ export class AgentRunner {
       // Capture result text (final agent output)
       if (message.type === "result") {
         const result = message as any;
-        if (result.result) {
-          fullText = result.result; // Use the final result as the response
+        if (result.total_cost_usd) {
+          this.state.totalCostUsd += result.total_cost_usd;
+          this.saveState();
         }
         // Check for cost info
         if (result.usage) {

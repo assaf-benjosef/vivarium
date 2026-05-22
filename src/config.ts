@@ -5,7 +5,7 @@ const ConfigSchema = z.object({
   telegramBotToken: z.string().min(1, "TELEGRAM_BOT_TOKEN is required"),
   allowedUsers: z.array(z.number()).default([]),
   maxTurns: z.number().default(30),
-  model: z.string().default("claude-sonnet-4-20250514"),
+  model: z.string().default("claude-sonnet-4-5"),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
