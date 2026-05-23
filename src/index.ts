@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { loadConfig } from "./config.js";
-import { TelegramChat } from "./chat/telegram.js";
+import { HubConnection } from "./ws/client.js";
 import { AgentRunner } from "./agent/runner.js";
 
 const WORKSPACE = "/workspace";
@@ -68,10 +68,10 @@ async function main() {
   }, AUTO_SAVE_INTERVAL_MS);
   console.log("[vivarium] Auto-save enabled (every 15 min)");
 
-  // Start the agent runner and chat
+  // Start the agent runner and connect to hub
   const runner = new AgentRunner(config);
-  const chat = new TelegramChat(config, runner);
-  await chat.start();
+  const hub = new HubConnection(config, runner);
+  await hub.connect();
 
   console.log("[vivarium] Viv is ready 🌱");
 }
