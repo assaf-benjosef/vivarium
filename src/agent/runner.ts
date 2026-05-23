@@ -141,13 +141,12 @@ export class AgentRunner {
 
     for await (const message of response) {
       // Capture session ID from init message
-      if (message.type === "system" && "subtype" in message) {
+      if (message.type === "system") {
         const sys = message as any;
-        if (sys.subtype === "init" && sys.data?.session_id) {
-          if (this.state.sessionId !== sys.data.session_id) {
-            this.state.sessionId = sys.data.session_id;
-            this.saveState();
-          }
+        const sessionId = sys.session_id ?? sys.data?.session_id;
+        if (sessionId && this.state.sessionId !== sessionId) {
+          this.state.sessionId = sessionId;
+          this.saveState();
         }
       }
 
@@ -180,10 +179,14 @@ export class AgentRunner {
             if (block.type === "tool_result" && block.tool_use_id) {
                if (Array.isArray(block.content)) {
                  for (const c of block.content) {
-                   if (c.type === "image" && c.data) {
-                     const buffer = Buffer.from(c.data, "base64");
-                     screenshot = buffer;
-                     if (onEvent) onEvent({ type: "screenshot", buffer });
+                   if (c.type === "image") {
+                     // SDK may return image data at c.data (older) or c.source.data (newer)
+                     const base64 = c.data ?? c.source?.data;
+                     if (base64) {
+                       const buffer = Buffer.from(base64, "base64");
+                       screenshot = buffer;
+                       if (onEvent) onEvent({ type: "screenshot", buffer });
+                     }
                    }
                  }
                }
