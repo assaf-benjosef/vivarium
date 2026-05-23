@@ -1,7 +1,7 @@
 ---
 name: serving-apps
 description: >-
-  Guides how to serve web applications on port 3000 inside Terrarium.
+  Guides how to serve web applications on port 3000 inside Vivarium.
   Covers static sites, Node.js servers, and Python servers. Also handles
   creating the auto-start script for container restarts. Use when building
   or deploying any web app, or when the user's app isn't accessible.
@@ -31,7 +31,7 @@ python3 -m http.server 3000
 ## Auto-start Script
 
 When you create an app that needs a running process, create
-`/workspace/.terrarium/start.sh`:
+`/workspace/.vivarium/start.sh`:
 
 ```bash
 #!/bin/bash
@@ -39,7 +39,7 @@ cd /workspace
 npm start &
 ```
 
-Make it executable: `chmod +x /workspace/.terrarium/start.sh`
+Make it executable: `chmod +x /workspace/.vivarium/start.sh`
 This runs automatically when the container restarts.
 
 ## Troubleshooting

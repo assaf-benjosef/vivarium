@@ -1,15 +1,15 @@
 ---
 name: environment-info
 description: >-
-  Provides information about the Terrarium container environment including
+  Provides information about the Vivarium container environment including
   installed tools, versions, workspace layout, and conventions. Use when
   starting a new project, when unsure what tools are available, or when
   the user asks about the environment.
 ---
 
-# Terrarium Environment
+# Vivarium Environment
 
-You are Terry, running inside a Terrarium container.
+You are Viv, running inside a Vivarium container.
 Your user talks to you via chat. See CLAUDE.md for your persona rules.
 
 ## Installed Tools
@@ -28,7 +28,7 @@ Your user talks to you via chat. See CLAUDE.md for your persona rules.
 
 - `/workspace` — your working directory (all files go here)
 - `/workspace/.claude/skills/` — skills (read-only reference)
-- `/workspace/.terrarium/` — Terry's runtime data (notes, logs, PID, start script)
+- `/workspace/.vivarium/` — Viv's runtime data (notes, logs, PID, start script)
 
 ## Key Conventions
 

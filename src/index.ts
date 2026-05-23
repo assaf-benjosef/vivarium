@@ -12,7 +12,7 @@ async function main() {
 
   // Configure git identity for the container
   try {
-    execSync('git config --global user.name "Terry" && git config --global user.email "terry@terrarium.local"', {
+    execSync('git config --global user.name "Viv" && git config --global user.email "viv@vivarium.local"', {
       stdio: "ignore",
     });
   } catch {
@@ -25,7 +25,7 @@ async function main() {
       cwd: WORKSPACE,
       stdio: "ignore",
     });
-    console.log("[terrarium] Initialized git in /workspace");
+    console.log("[vivarium] Initialized git in /workspace");
   }
 
   // Copy skills into workspace if not present
@@ -33,7 +33,7 @@ async function main() {
     execSync(`mkdir -p ${WORKSPACE}/.claude/skills && cp -r /app/skills/* ${WORKSPACE}/.claude/skills/`, {
       stdio: "ignore",
     });
-    console.log("[terrarium] Skills installed to /workspace/.claude/skills/");
+    console.log("[vivarium] Skills installed to /workspace/.claude/skills/");
   }
 
   // Copy CLAUDE.md to workspace root if not present (SDK loads it from here)
@@ -41,17 +41,17 @@ async function main() {
     execSync(`cp /app/workspace-template/CLAUDE.md ${WORKSPACE}/CLAUDE.md`, {
       stdio: "ignore",
     });
-    console.log("[terrarium] CLAUDE.md installed to /workspace/");
+    console.log("[vivarium] CLAUDE.md installed to /workspace/");
   }
 
   // Run auto-start script if it exists
-  const startScript = `${WORKSPACE}/.terrarium/start.sh`;
+  const startScript = `${WORKSPACE}/.vivarium/start.sh`;
   if (existsSync(startScript)) {
     try {
       execSync(`bash ${startScript}`, { cwd: WORKSPACE, stdio: "ignore" });
-      console.log("[terrarium] Ran start.sh");
+      console.log("[vivarium] Ran start.sh");
     } catch {
-      console.warn("[terrarium] start.sh failed (non-fatal)");
+      console.warn("[vivarium] start.sh failed (non-fatal)");
     }
   }
 
@@ -66,17 +66,17 @@ async function main() {
       // Ignore — workspace might not have changes
     }
   }, AUTO_SAVE_INTERVAL_MS);
-  console.log("[terrarium] Auto-save enabled (every 15 min)");
+  console.log("[vivarium] Auto-save enabled (every 15 min)");
 
   // Start the agent runner and chat
   const runner = new AgentRunner(config);
   const chat = new TelegramChat(config, runner);
   await chat.start();
 
-  console.log("[terrarium] Terry is ready 🌱");
+  console.log("[vivarium] Viv is ready 🌱");
 }
 
 main().catch((err) => {
-  console.error("[terrarium] Fatal error:", err);
+  console.error("[vivarium] Fatal error:", err);
   process.exit(1);
 });

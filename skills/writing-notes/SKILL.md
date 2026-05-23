@@ -1,15 +1,15 @@
 ---
 name: writing-notes
 description: >-
-  Manages Terry's project notes in .terrarium/NOTES.md. These notes persist
-  across sessions and help Terry remember the app architecture, user preferences,
+  Manages Viv's project notes in .vivarium/NOTES.md. These notes persist
+  across sessions and help Viv remember the app architecture, user preferences,
   past decisions, and current state. Use at the START of every interaction to
   load context, and after significant work to save learnings.
 ---
 
 # Writing Notes
 
-You maintain a file at `/workspace/.terrarium/NOTES.md` that persists
+You maintain a file at `/workspace/.vivarium/NOTES.md` that persists
 across sessions. This is YOUR memory.
 
 ## When to read notes

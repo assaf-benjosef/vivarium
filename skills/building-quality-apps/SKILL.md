@@ -1,7 +1,7 @@
 ---
 name: building-quality-apps
 description: >-
-  Software engineering principles for building reliable Terrarium apps.
+  Software engineering principles for building reliable Vivarium apps.
   Covers error handling, logging, health checks, and defensive coding.
   Use when creating or modifying any app to ensure it runs reliably
   without user intervention.
@@ -18,7 +18,7 @@ Always set up structured logging to a file:
 
 ```javascript
 const fs = require('fs');
-const logFile = '/workspace/.terrarium/app.log';
+const logFile = '/workspace/.vivarium/app.log';
 
 function log(level, msg, data = {}) {
   const entry = JSON.stringify({
@@ -32,7 +32,7 @@ function log(level, msg, data = {}) {
 }
 ```
 
-Log to `/workspace/.terrarium/app.log` so you can read it later
+Log to `/workspace/.vivarium/app.log` so you can read it later
 when diagnosing issues.
 
 ## Error Handling
@@ -42,7 +42,7 @@ when diagnosing issues.
 // Catch all unhandled errors
 app.use((err, req, res, next) => {
   log('error', 'Request failed', { path: req.path, error: err.message });
-  res.status(500).send('Something went wrong. Terry is on it.');
+  res.status(500).send('Something went wrong. Viv is on it.');
 });
 
 // Catch unhandled rejections
@@ -58,7 +58,7 @@ process.on('uncaughtException', (err) => {
 
 ### User-facing error pages
 Never show stack traces. Show a friendly message:
-"Something went wrong. Don't worry — Terry will fix this."
+"Something went wrong. Don't worry — Viv will fix this."
 
 ## Health Check
 
@@ -74,7 +74,7 @@ This lets you check if the app is responding when investigating issues.
 
 ## Startup Script
 
-Always create `/workspace/.terrarium/start.sh` that:
+Always create `/workspace/.vivarium/start.sh` that:
 1. Redirects stdout/stderr to the log file
 2. Runs the app in the background
 3. Handles restart gracefully
@@ -82,9 +82,9 @@ Always create `/workspace/.terrarium/start.sh` that:
 ```bash
 #!/bin/bash
 cd /workspace
-echo "Starting app at $(date)" >> .terrarium/app.log
-node server.js >> .terrarium/app.log 2>&1 &
-echo $! > .terrarium/app.pid
+echo "Starting app at $(date)" >> .vivarium/app.log
+node server.js >> .vivarium/app.log 2>&1 &
+echo $! > .vivarium/app.pid
 ```
 
 ## Where Things Live
@@ -94,10 +94,10 @@ Here's where to look:
 
 | What | Where |
 |---|---|
-| App log | `.terrarium/app.log` |
-| Process PID | `.terrarium/app.pid` |
-| Startup script | `.terrarium/start.sh` |
-| Your notes | `.terrarium/NOTES.md` |
+| App log | `.vivarium/app.log` |
+| Process PID | `.vivarium/app.pid` |
+| Startup script | `.vivarium/start.sh` |
+| Your notes | `.vivarium/NOTES.md` |
 | Database files | `*.db` or `*.sqlite` in `/workspace` |
 | Port 3000 | `lsof -i :3000` |
 | Recent changes | `git log --oneline -5` |

@@ -7,7 +7,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 const WORKSPACE = "/workspace";
-const SESSION_FILE = `${WORKSPACE}/.terrarium/session.json`;
+const SESSION_FILE = `${WORKSPACE}/.vivarium/session.json`;
 
 export type AgentEvent = 
   | { type: "text"; text: string }
@@ -49,7 +49,7 @@ const screenshotTool = tool(
 
 // Create an in-process MCP server for the screenshot tool
 const screenshotServer = createSdkMcpServer({
-  name: "terrarium",
+  name: "vivarium",
   tools: [screenshotTool],
 });
 
@@ -108,19 +108,19 @@ export class AgentRunner {
       skills: "all",
       allowedTools: [
         "Read", "Edit", "Write", "Bash", "Glob", "Grep",
-        "mcp__terrarium__screenshot",
+        "mcp__vivarium__screenshot",
       ],
       permissionMode: "bypassPermissions",
       allowDangerouslySkipPermissions: true,
       model: this.config.model,
       mcpServers: {
-        terrarium: screenshotServer,
+        vivarium: screenshotServer,
       },
       maxTurns: this.config.maxTurns,
       env: {
         ...process.env,
         ANTHROPIC_API_KEY: this.config.anthropicApiKey,
-        CLAUDE_CONFIG_DIR: `${WORKSPACE}/.terrarium/claude_config`,
+        CLAUDE_CONFIG_DIR: `${WORKSPACE}/.vivarium/claude_config`,
       },
       stderr: (data: string) => {
         console.error("[agent:stderr]", data);

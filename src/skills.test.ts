@@ -65,9 +65,9 @@ describe("CLAUDE.md", () => {
     expect(existsSync(claudeMdPath)).toBe(true);
   });
 
-  it("should mention Terry", () => {
+  it("should mention Viv", () => {
     const content = readFileSync(claudeMdPath, "utf-8");
-    expect(content).toContain("Terry");
+    expect(content).toContain("Viv");
   });
 
   it("should have non-technical communication rules", () => {

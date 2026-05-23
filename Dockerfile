@@ -34,12 +34,12 @@ COPY skills/ ./skills/
 COPY workspace-template/ ./workspace-template/
 
 # Create non-root user — Claude Agent SDK refuses bypassPermissions as root
-RUN useradd -m -s /bin/bash terry \
-    && echo "terry ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN useradd -m -s /bin/bash viv \
+    && echo "viv ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-RUN mkdir -p /workspace && chown terry:terry /workspace
+RUN mkdir -p /workspace && chown viv:viv /workspace
 VOLUME /workspace
 EXPOSE 3000
 
-USER terry
+USER viv
 CMD ["node", "/app/dist/index.js"]

@@ -45,13 +45,13 @@ export class TelegramChat implements ChatProvider {
           const status = this.runner.getStatus();
           const cost = status.totalCostUsd.toFixed(3);
           const memory = status.sessionId ? "Active" : "Fresh";
-          await ctx.reply(`🟢 Terry is online.\n\nMemory: ${memory}\nTotal cost this session: $${cost}`);
+          await ctx.reply(`🟢 Viv is online.\n\nMemory: ${memory}\nTotal cost this session: $${cost}`);
           return;
         }
 
         if (text === "/help" || text === "/start") {
           await ctx.reply(
-            "👋 Hi! I'm Terry, your AI app developer.\n\n" +
+            "👋 Hi! I'm Viv, your AI app developer.\n\n" +
             "Tell me what you want to build, and I'll write the code, run it, and show you screenshots.\n\n" +
             "Commands:\n" +
             "• /new - Start a fresh conversation (wipe memory)\n" +

@@ -1,7 +1,7 @@
 ---
 name: managing-databases
 description: >-
-  Guides setting up and managing SQLite databases for Terrarium apps.
+  Guides setting up and managing SQLite databases for Vivarium apps.
   Covers creating databases, recommended Node.js and Python patterns,
   and backup considerations. Use when the user's app needs data persistence,
   a database, or when working with SQLite.
@@ -9,7 +9,7 @@ description: >-
 
 # Managing Databases
 
-SQLite is pre-installed and recommended for all Terrarium apps.
+SQLite is pre-installed and recommended for all Vivarium apps.
 No setup needed — just create a .db file.
 
 ## Node.js (recommended)

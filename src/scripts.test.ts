@@ -11,7 +11,7 @@ describe("Snapshot scripts (integration)", () => {
 
   beforeEach(() => {
     // Create a temp directory with a git repo
-    workDir = mkdtempSync(join(tmpdir(), "terrarium-test-"));
+    workDir = mkdtempSync(join(tmpdir(), "vivarium-test-"));
     execSync('git init && git config user.name "Test" && git config user.email "test@test"', {
       cwd: workDir,
       stdio: "ignore",

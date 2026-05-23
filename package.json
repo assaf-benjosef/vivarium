@@ -1,7 +1,7 @@
 {
-  "name": "terrarium",
+  "name": "vivarium",
   "version": "0.1.0",
-  "description": "A curated Docker environment + Agent Skills that turns an AI agent into a personal app developer you talk to on Telegram.",
+  "description": "An AI agent that lives inside a microVM, builds and maintains web apps for you via chat.",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

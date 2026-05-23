@@ -23,7 +23,7 @@ If it is empty or missing, tell the user they need to restart the container with
 Start ngrok in the background pointing to port 3000, and output its logs to a file:
 
 ```bash
-ngrok http 3000 > /workspace/.terrarium/ngrok.log &
+ngrok http 3000 > /workspace/.vivarium/ngrok.log &
 ```
 
 Wait a few seconds for it to connect, then fetch the public URL:
