@@ -1,6 +1,6 @@
 import WebSocket from "ws";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { resolve, dirname } from "node:path";
 import { HubMessageSchema, type VivariumMessage, type HubMessage } from "./protocol.js";
 import type { AgentRunner } from "../agent/runner.js";
 import type { Config } from "../config.js";
@@ -8,6 +8,7 @@ import type { Config } from "../config.js";
 const MAX_RECONNECT_DELAY_MS = 60_000;
 const HEARTBEAT_INTERVAL_MS = 30_000;
 const HEARTBEAT_TIMEOUT_MS = 60_000;
+const TOKEN_FILE = "/workspace/.vivarium/hub-token";
 
 function getVersion(): string {
   try {
@@ -102,6 +103,7 @@ export class HubConnection {
       case "registered":
         this.vivariumId = msg.vivariumId;
         this.registered = true;
+        this.persistToken();
         console.log(`[ws] Registered as ${msg.vivariumId}`);
         break;
 
@@ -181,6 +183,15 @@ export class HubConnection {
     const next = this.messageQueue.shift();
     if (next) {
       this.processMessage(next.id, next.text);
+    }
+  }
+
+  private persistToken(): void {
+    try {
+      mkdirSync(dirname(TOKEN_FILE), { recursive: true });
+      writeFileSync(TOKEN_FILE, this.config.hubToken);
+    } catch {
+      console.warn("[ws] Failed to persist hub token");
     }
   }
 

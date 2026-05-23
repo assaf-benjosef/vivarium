@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { readFileSync, existsSync } from "node:fs";
+
+const TOKEN_FILE = "/workspace/.vivarium/hub-token";
 
 const ConfigSchema = z.object({
   anthropicApiKey: z.string().min(1, "ANTHROPIC_API_KEY is required"),
@@ -11,11 +14,24 @@ const ConfigSchema = z.object({
 
 export type Config = z.infer<typeof ConfigSchema>;
 
+function readTokenFromFile(): string | undefined {
+  try {
+    if (existsSync(TOKEN_FILE)) {
+      return readFileSync(TOKEN_FILE, "utf-8").trim();
+    }
+  } catch {
+    // File not readable — fall through
+  }
+  return undefined;
+}
+
 export function loadConfig(): Config {
+  const hubToken = process.env.HUB_TOKEN || readTokenFromFile();
+
   return ConfigSchema.parse({
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
     hubUrl: process.env.HUB_URL,
-    hubToken: process.env.HUB_TOKEN,
+    hubToken,
     vivariumName: process.env.VIVARIUM_NAME || undefined,
     maxTurns: process.env.MAX_TURNS ? Number(process.env.MAX_TURNS) : undefined,
     model: process.env.MODEL,
