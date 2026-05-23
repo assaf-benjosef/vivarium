@@ -5,7 +5,7 @@ import { z } from "zod";
 const EventSchema = z.discriminatedUnion("event", [
   z.object({ event: z.literal("text"), content: z.string() }),
   z.object({ event: z.literal("screenshot"), image: z.string() }),
-  z.object({ event: z.literal("done"), cost: z.number().optional() }),
+  z.object({ event: z.literal("done"), cost: z.number().optional(), inputTokens: z.number().optional() }),
   z.object({ event: z.literal("error"), message: z.string() }),
   z.object({ event: z.literal("typing") }),
 ]);
@@ -25,6 +25,8 @@ const StatusMessage = z.object({
   type: z.literal("status"),
   appRunning: z.boolean(),
   uptime: z.number(),
+  totalCostUsd: z.number().optional(),
+  inputTokens: z.number().optional(),
 });
 
 export const VivariumMessageSchema = z.union([

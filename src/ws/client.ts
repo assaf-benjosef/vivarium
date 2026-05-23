@@ -117,13 +117,17 @@ export class HubConnection {
         console.log(`[ws] Wake: ${msg.reason}`);
         break;
 
-      case "health_check":
+      case "health_check": {
+        const stats = this.runner.getStatus();
         this.send({
           type: "status",
           appRunning: true,
           uptime: process.uptime(),
+          totalCostUsd: stats.totalCostUsd,
+          inputTokens: stats.lastInputTokens,
         });
         break;
+      }
     }
   }
 
@@ -162,7 +166,8 @@ export class HubConnection {
       });
 
       clearInterval(typingInterval);
-      this.send({ type: "event", msgId, event: "done" });
+      const status = this.runner.getStatus();
+      this.send({ type: "event", msgId, event: "done", cost: status.totalCostUsd, inputTokens: status.lastInputTokens });
     } catch (err) {
       clearInterval(typingInterval);
       this.send({ type: "event", msgId, event: "error", message: String(err) });

@@ -22,6 +22,7 @@ export interface AgentResponse {
 interface SessionState {
   sessionId?: string;
   totalCostUsd: number;
+  lastInputTokens?: number;
 }
 
 // Define the screenshot tool using the SDK's tool() helper
@@ -90,7 +91,8 @@ export class AgentRunner {
   public getStatus() {
     return {
       sessionId: this.state.sessionId,
-      totalCostUsd: this.state.totalCostUsd
+      totalCostUsd: this.state.totalCostUsd,
+      lastInputTokens: this.state.lastInputTokens,
     };
   }
 
@@ -200,14 +202,14 @@ export class AgentRunner {
         const result = message as any;
         if (result.total_cost_usd) {
           this.state.totalCostUsd += result.total_cost_usd;
-          this.saveState();
         }
-        // Check for cost info
         if (result.usage) {
+          this.state.lastInputTokens = result.usage.input_tokens;
           console.log(
             `[agent] Tokens: ${result.usage.input_tokens} in, ${result.usage.output_tokens} out`
           );
         }
+        this.saveState();
       }
     }
 

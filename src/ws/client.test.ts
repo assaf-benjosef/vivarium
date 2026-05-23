@@ -8,7 +8,7 @@ import type { AgentRunner, AgentEvent } from "../agent/runner.js";
 function createMockRunner(): AgentRunner {
   return {
     clearSession: () => {},
-    getStatus: () => ({ sessionId: "test", totalCostUsd: 0.05 }),
+    getStatus: () => ({ sessionId: "test", totalCostUsd: 0.05, lastInputTokens: 12000 }),
     run: async (_msg: string, _chatId: number, onEvent?: (e: AgentEvent) => void) => {
       if (onEvent) {
         onEvent({ type: "text", text: "I built your app!" });
@@ -110,6 +110,8 @@ describe("HubConnection", () => {
     const doneEvent = events.find((e: any) => e.event === "done") as Record<string, unknown>;
     expect(doneEvent).toBeDefined();
     expect(doneEvent.msgId).toBe("msg_1");
+    expect(doneEvent.cost).toBe(0.05);
+    expect(doneEvent.inputTokens).toBe(12000);
   });
 
   it("should handle /new command locally", async () => {
@@ -156,5 +158,7 @@ describe("HubConnection", () => {
     expect(status).toBeDefined();
     expect(status.appRunning).toBe(true);
     expect(typeof status.uptime).toBe("number");
+    expect(status.totalCostUsd).toBe(0.05);
+    expect(status.inputTokens).toBe(12000);
   });
 });
