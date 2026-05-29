@@ -5,6 +5,9 @@ set -euo pipefail
 # Installs and runs a vivarium using Docker (default) or SmolVM.
 
 DEFAULT_HUB_URL="wss://hub.vivarium.run/ws"
+GHCR_IMAGE="ghcr.io/assaf-benjosef/vivarium"
+PACK_URL_BASE="https://github.com/assaf-benjosef/vivarium/releases"
+PACK_CACHE_DIR="${HOME}/.cache/vivarium/packs"
 DOCKER_IMAGE="vivarium"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
@@ -16,6 +19,7 @@ HUB_URL="$DEFAULT_HUB_URL"
 NAME=""
 PORT=""
 API_KEY="${ANTHROPIC_API_KEY:-}"
+VIVARIUM_VERSION="latest"
 
 log()  { printf "\033[1;32m%s\033[0m %s\n" ">" "$*"; }
 warn() { printf "\033[1;33m%s\033[0m %s\n" "!" "$*"; }
@@ -31,6 +35,7 @@ while [[ $# -gt 0 ]]; do
     --name)     NAME="$2"; shift 2 ;;
     --port)     PORT="$2"; shift 2 ;;
     --api-key)  API_KEY="$2"; __API_KEY_FROM_FLAG=1; shift 2 ;;
+    --version)  VIVARIUM_VERSION="$2"; shift 2 ;;
     -h|--help)
       cat <<EOF
 Usage: $0 --token TOKEN [options]
@@ -43,6 +48,7 @@ Options:
   --name NAME       Vivarium name (prompted if not set)
   --port PORT       Host port for app (auto-detected if not set)
   --api-key KEY     Anthropic API key (prompted if not set)
+  --version TAG     Release version for SmolVM pack / Docker image (default: latest)
   -h, --help        Show this help
 EOF
       exit 0
@@ -137,8 +143,10 @@ docker_setup() {
     docker build -t "$DOCKER_IMAGE" "$REPO_DIR" || die "Docker build failed."
   else
     log "Pulling vivarium Docker image..."
-    docker pull "ghcr.io/vivarium/vivarium:latest" || die "Docker pull failed."
-    DOCKER_IMAGE="ghcr.io/vivarium/vivarium:latest"
+    local pull_tag="latest"
+    [[ "$VIVARIUM_VERSION" != "latest" ]] && pull_tag="${VIVARIUM_VERSION#v}"
+    docker pull "${GHCR_IMAGE}:${pull_tag}" || die "Docker pull failed."
+    DOCKER_IMAGE="${GHCR_IMAGE}:${pull_tag}"
   fi
 
   local docker_hub_url
@@ -187,22 +195,45 @@ docker_setup() {
   log "Vivarium container is running."
 }
 
+# --- Download pre-built SmolVM pack ---
+download_pack() {
+  local version="$1"
+  local pack_file="vivarium.smolmachine"
+  local version_dir="${PACK_CACHE_DIR}/${version}"
+  local dest="${version_dir}/${pack_file}"
+
+  mkdir -p "$version_dir"
+
+  if [[ -f "$dest" ]] && [[ "$version" != "latest" ]]; then
+    log "Using cached pack: $dest"
+    echo "$dest"
+    return
+  fi
+
+  local download_url
+  if [[ "$version" == "latest" ]]; then
+    download_url="${PACK_URL_BASE}/latest/download/${pack_file}"
+  else
+    download_url="${PACK_URL_BASE}/download/${version}/${pack_file}"
+  fi
+
+  log "Downloading SmolVM pack ($version)..."
+  curl -fSL --progress-bar -o "$dest" "$download_url" \
+    || die "Failed to download pack from $download_url. Use --docker instead."
+
+  echo "$dest"
+}
+
 # --- SmolVM setup ---
 smolvm_setup() {
-  # Install smolvm if needed
   if ! command -v smolvm >/dev/null 2>&1; then
     log "Installing SmolVM..."
     curl -sSL https://smolmachines.com/install.sh | bash || die "SmolVM installation failed."
   fi
 
-  local smolfile="$REPO_DIR/vivarium.smolfile"
-  [[ -f "$smolfile" ]] || die "Smolfile not found at $smolfile"
+  local pack_path
+  pack_path=$(download_pack "$VIVARIUM_VERSION")
 
-  # Generate per-vivarium Smolfile with correct port
-  local tmp_smolfile="/tmp/${CONTAINER_NAME}.smolfile"
-  sed "s|\"3000:3000\"|\"${PORT}:3000\"|" "$smolfile" > "$tmp_smolfile"
-
-  # Check for existing machine with same name
   if smolvm machine status --name "$CONTAINER_NAME" >/dev/null 2>&1; then
     warn "Machine '$CONTAINER_NAME' already exists."
     read -p "Remove it and start fresh? [y/N] " confirm
@@ -214,73 +245,36 @@ smolvm_setup() {
     fi
   fi
 
-  log "Creating SmolVM machine '$CONTAINER_NAME'..."
-  smolvm machine create "$CONTAINER_NAME" -s "$tmp_smolfile" || die "SmolVM machine creation failed."
+  local smolvm_hub_url
+  smolvm_hub_url=$(resolve_hub_url "$HUB_URL" "smolvm")
+
+  log "Creating SmolVM machine '$CONTAINER_NAME' from pack..."
+  smolvm machine create "$CONTAINER_NAME" \
+    --from "$pack_path" \
+    --port "${PORT}:3000" \
+    --net \
+    -e "ANTHROPIC_API_KEY=${API_KEY}" \
+    -e "HUB_URL=${smolvm_hub_url}" \
+    -e "HUB_TOKEN=${TOKEN}" \
+    -e "VIVARIUM_NAME=${NAME}" \
+    -e "PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium" \
+    -e "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" \
+    || die "SmolVM machine creation failed."
 
   log "Starting SmolVM machine..."
   smolvm machine start --name "$CONTAINER_NAME" || die "SmolVM machine start failed."
 
-  # Wait for machine to be ready for exec (init commands install system deps — can take a few minutes)
-  log "Waiting for init commands to finish (installing system deps)..."
+  log "Waiting for machine to be ready..."
   local retries=0
   until smolvm machine exec --name "$CONTAINER_NAME" -- true 2>/dev/null; do
     retries=$((retries + 1))
-    [[ $retries -ge 120 ]] && die "Machine started but not accepting commands after 2 minutes."
+    [[ $retries -ge 15 ]] && die "Machine started but not accepting commands after 30 seconds."
     sleep 2
   done
 
-  # Build TypeScript if dist/ doesn't exist
-  if [[ ! -d "$REPO_DIR/dist" ]]; then
-    log "Building TypeScript..."
-    (cd "$REPO_DIR" && npm run build) || die "TypeScript build failed."
-  fi
-
-  # Copy app files into VM
-  log "Deploying app into VM..."
-  local tar_file="/tmp/${CONTAINER_NAME}-app.tar"
-  # Use GNU tar if available (avoids macOS LIBARCHIVE.xattr headers that GNU tar on Linux complains about)
-  local tar_cmd="tar"
-  command -v gtar >/dev/null 2>&1 && tar_cmd="gtar"
-  (cd "$REPO_DIR" && COPYFILE_DISABLE=1 $tar_cmd cf "$tar_file" --no-mac-metadata package.json package-lock.json dist/ skills/ workspace-template/ 2>/dev/null)
-  smolvm machine exec --name "$CONTAINER_NAME" -- mkdir -p /app
-  smolvm machine cp "$tar_file" "$CONTAINER_NAME:/tmp/app.tar"
-  smolvm machine exec --name "$CONTAINER_NAME" -- tar xf /tmp/app.tar -C /app
-  smolvm machine exec --name "$CONTAINER_NAME" -- rm /tmp/app.tar
-  rm -f "$tar_file"
-
-  # Install production dependencies
-  log "Installing dependencies inside VM..."
-  smolvm machine exec --name "$CONTAINER_NAME" -- sh -c "cd /app && npm ci --omit=dev"
-
-  # Write env and start files locally, then copy into VM
-  local smolvm_hub_url
-  smolvm_hub_url=$(resolve_hub_url "$HUB_URL" "smolvm")
-
-  local tmp_env="/tmp/${CONTAINER_NAME}-env.sh"
-  cat > "$tmp_env" << EOF
-export ANTHROPIC_API_KEY="$API_KEY"
-export HUB_URL="$smolvm_hub_url"
-export HUB_TOKEN="$TOKEN"
-export VIVARIUM_NAME="$NAME"
-export PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
-export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
-EOF
-  smolvm machine cp "$tmp_env" "$CONTAINER_NAME:/app/env.sh"
-  rm -f "$tmp_env"
-
-  local tmp_start="/tmp/${CONTAINER_NAME}-start.sh"
-  cat > "$tmp_start" << 'EOF'
-#!/bin/bash
-source /app/env.sh
-exec sudo -u viv -E node /app/dist/index.js
-EOF
-  smolvm machine cp "$tmp_start" "$CONTAINER_NAME:/app/start.sh"
-  smolvm machine exec --name "$CONTAINER_NAME" -- chmod +x /app/start.sh
-  rm -f "$tmp_start"
-
-  # Run the app via start.sh (detached, suppress output leaking to host terminal)
   log "Launching vivarium..."
-  smolvm machine exec --name "$CONTAINER_NAME" -- bash /app/start.sh >/dev/null 2>&1 &
+  smolvm machine exec --name "$CONTAINER_NAME" -- \
+    sudo -u viv -E node /app/dist/index.js >/dev/null 2>&1 &
 
   log "SmolVM machine is running."
 }
