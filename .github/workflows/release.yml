@@ -86,6 +86,7 @@ jobs:
         run: |
           smolvm pack create \
             --image "ghcr.io/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.num }}" \
+            --oci-platform linux/arm64 \
             --cpus 2 \
             --mem 2048 \
             --entrypoint "node /app/dist/index.js" \
