@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
 import { resolve, join } from "node:path";
-import { execSync } from "node:child_process";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const SKILLS_DIR = join(ROOT, "skills");
@@ -98,9 +97,7 @@ describe("Snapshot scripts", () => {
   it("should have executable permissions", () => {
     const scripts = ["snapshot.sh", "rollback.sh", "list-snapshots.sh"];
     for (const script of scripts) {
-      const stat = execSync(`stat -f '%A' '${join(scriptsDir, script)}'`).toString().trim();
-      // Should have execute bit set (e.g., 755, 775, etc.)
-      const mode = parseInt(stat, 8);
+      const mode = statSync(join(scriptsDir, script)).mode;
       expect(mode & 0o111, `${script} should be executable`).toBeGreaterThan(0);
     }
   });
