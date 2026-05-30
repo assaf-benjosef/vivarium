@@ -259,17 +259,21 @@ smolvm_setup() {
     -e "VIVARIUM_NAME=${NAME}" \
     -e "PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium" \
     -e "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" \
-    --init /app/entrypoint.sh \
+    --init "sh -c '/app/entrypoint.sh > /tmp/vivarium.log 2>&1 &'" \
     || die "SmolVM machine creation failed."
 
   log "Starting SmolVM machine..."
   smolvm machine start --name "$CONTAINER_NAME" || die "SmolVM machine start failed."
 
-  log "Waiting for machine to be ready..."
+  log "Waiting for vivarium to start..."
   local retries=0
-  until smolvm machine exec --name "$CONTAINER_NAME" -- true 2>/dev/null; do
+  until smolvm machine exec --name "$CONTAINER_NAME" -- pgrep -x node >/dev/null 2>&1; do
     retries=$((retries + 1))
-    [[ $retries -ge 15 ]] && die "Machine started but not accepting commands after 30 seconds."
+    if [[ $retries -ge 15 ]]; then
+      warn "Vivarium process did not start. Check logs with:"
+      warn "  smolvm machine exec --name $CONTAINER_NAME -- cat /tmp/vivarium.log"
+      die "Startup failed."
+    fi
     sleep 2
   done
 
@@ -402,6 +406,7 @@ if [[ "$USE_DOCKER" == true ]]; then
   printf "   Restart:   docker start %s\n" "$CONTAINER_NAME"
 else
   printf "   Shell:     smolvm machine exec -it --name %s -- bash\n" "$CONTAINER_NAME"
+  printf "   Logs:      smolvm machine exec --name %s -- cat /tmp/vivarium.log\n" "$CONTAINER_NAME"
   printf "   Stop:      smolvm machine stop --name %s\n" "$CONTAINER_NAME"
   printf "   Restart:   smolvm machine start --name %s\n" "$CONTAINER_NAME"
 fi
