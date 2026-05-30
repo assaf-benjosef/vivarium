@@ -136,8 +136,29 @@ export class AgentRunner {
 
     console.log(`\n[user] 👤 ${userMessage}`);
 
+    try {
+      return await this._runQuery(userMessage, options, onEvent);
+    } catch (err) {
+      if (this.state.sessionId && String(err).includes("No conversation found")) {
+        console.warn("[agent] Stale session, starting fresh");
+        this.clearSession();
+        delete options.resume;
+        return await this._runQuery(userMessage, options, onEvent);
+      }
+      throw err;
+    }
+  }
+
+  private async _runQuery(
+    _userMessage: string,
+    options: Record<string, unknown>,
+    onEvent?: (event: AgentEvent) => void
+  ): Promise<AgentResponse> {
+    let fullText = "";
+    let screenshot: Buffer | undefined;
+
     const response = query({
-      prompt: userMessage,
+      prompt: _userMessage,
       options: options as any,
     });
 
