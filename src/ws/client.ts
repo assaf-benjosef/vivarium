@@ -39,6 +39,13 @@ export class HubConnection {
   }
 
   async connect(): Promise<void> {
+    if (this.ws) {
+      this.ws.removeAllListeners();
+      this.ws.terminate();
+      this.ws = null;
+    }
+    this.cleanup();
+
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(this.config.hubUrl);
 
@@ -58,6 +65,7 @@ export class HubConnection {
 
       ws.on("close", (code, reason) => {
         console.log(`[ws] Disconnected: ${code} ${reason}`);
+        if (this.ws !== ws) return;
         this.cleanup();
         this.scheduleReconnect();
       });
