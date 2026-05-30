@@ -9,14 +9,6 @@ const AUTO_SAVE_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
 const IS_CONTAINER = existsSync(WORKSPACE);
 
 function setupContainer(): void {
-  try {
-    execSync('git config --global user.name "Viv" && git config --global user.email "viv@vivarium.local"', {
-      stdio: "ignore",
-    });
-  } catch {
-    // Home dir may not be writable (e.g. SmolVM uid mismatch) — git -c flags below handle this
-  }
-
   if (!existsSync(`${WORKSPACE}/.git`)) {
     execSync(`git init && git add -A && git -c user.name=Viv -c user.email=viv@vivarium.local commit -m "Initial commit" --allow-empty`, {
       cwd: WORKSPACE,
@@ -24,6 +16,11 @@ function setupContainer(): void {
     });
     console.log("[vivarium] Initialized git in /workspace");
   }
+
+  execSync('git config user.name "Viv" && git config user.email "viv@vivarium.local"', {
+    cwd: WORKSPACE,
+    stdio: "ignore",
+  });
 
   if (!existsSync(`${WORKSPACE}/.claude/skills`)) {
     execSync(`mkdir -p ${WORKSPACE}/.claude/skills && cp -r /app/skills/* ${WORKSPACE}/.claude/skills/`, {
