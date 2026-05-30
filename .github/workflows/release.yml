@@ -77,8 +77,11 @@ jobs:
     needs: docker
     runs-on: ubuntu-latest
     steps:
-      - name: Enable KVM
-        run: sudo usermod -aG kvm "$USER" && sudo chmod 666 /dev/kvm
+      - name: Enable KVM and install dependencies
+        run: |
+          sudo chmod 666 /dev/kvm
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libvirglrenderer1 > /dev/null
 
       - name: Install SmolVM
         run: curl -sSL https://smolmachines.com/install.sh | bash
