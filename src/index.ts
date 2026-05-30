@@ -57,6 +57,11 @@ function setupContainer(): void {
   console.log("[vivarium] Auto-save enabled (every 15 min)");
 }
 
+process.on("SIGTERM", () => {
+  console.log("[vivarium] SIGTERM received, shutting down");
+  process.exit(0);
+});
+
 async function main() {
   const config = loadConfig();
 

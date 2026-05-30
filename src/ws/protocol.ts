@@ -44,6 +44,7 @@ export const HubMessageSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("message"), id: z.string(), text: z.string() }),
   z.object({ type: z.literal("wake"), reason: z.string() }),
   z.object({ type: z.literal("health_check") }),
+  z.object({ type: z.literal("shutdown") }),
 ]);
 
 export type HubMessage = z.infer<typeof HubMessageSchema>;

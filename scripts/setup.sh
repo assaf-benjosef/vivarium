@@ -175,7 +175,7 @@ docker_setup() {
 
   docker run -d \
     --name "$CONTAINER_NAME" \
-    --restart unless-stopped \
+    --restart on-failure \
     -e ANTHROPIC_API_KEY="$API_KEY" \
     -e HUB_URL="$docker_hub_url" \
     -e HUB_TOKEN="$TOKEN" \
@@ -327,7 +327,10 @@ $(for arg in $exec_args; do echo "    <string>${arg}</string>"; done)
   <key>RunAtLoad</key>
   <true/>
   <key>KeepAlive</key>
-  <true/>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
   <key>StandardOutPath</key>
   <string>/tmp/vivarium-${SAFE_NAME}.log</string>
   <key>StandardErrorPath</key>
@@ -372,7 +375,7 @@ Wants=network-online.target
 Type=simple
 ExecStart=${exec_start}
 ExecStop=${exec_stop}
-Restart=always
+Restart=on-failure
 RestartSec=10
 
 [Install]

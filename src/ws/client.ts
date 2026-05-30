@@ -138,6 +138,11 @@ export class HubConnection {
         });
         break;
       }
+
+      case "shutdown":
+        console.log("[ws] Shutdown requested by hub");
+        this.ws?.close(1000, "shutdown");
+        process.exit(0);
     }
   }
 
