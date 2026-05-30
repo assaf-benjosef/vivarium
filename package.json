@@ -1,6 +1,6 @@
 {
   "name": "vivarium",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An AI agent that lives inside a microVM, builds and maintains web apps for you via chat.",
   "type": "module",
   "main": "dist/index.js",
