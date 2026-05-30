@@ -205,7 +205,7 @@ download_pack() {
   mkdir -p "$version_dir"
 
   if [[ -f "$dest" ]] && [[ "$version" != "latest" ]]; then
-    log "Using cached pack: $dest"
+    log "Using cached pack: $dest" >&2
     echo "$dest"
     return
   fi
@@ -217,7 +217,7 @@ download_pack() {
     download_url="${PACK_URL_BASE}/download/${version}/${pack_file}"
   fi
 
-  log "Downloading SmolVM pack ($version)..."
+  log "Downloading SmolVM pack ($version)..." >&2
   curl -fSL --progress-bar -o "$dest" "$download_url" \
     || die "Failed to download pack from $download_url. Use --docker instead."
 

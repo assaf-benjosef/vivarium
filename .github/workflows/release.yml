@@ -89,7 +89,6 @@ jobs:
             --oci-platform linux/arm64 \
             --cpus 2 \
             --mem 2048 \
-            --entrypoint "node /app/dist/index.js" \
             -o vivarium
 
       - uses: actions/upload-artifact@v4
