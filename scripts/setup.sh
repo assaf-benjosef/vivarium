@@ -272,10 +272,6 @@ smolvm_setup() {
     sleep 2
   done
 
-  log "Launching vivarium..."
-  smolvm machine exec --name "$CONTAINER_NAME" -- \
-    sudo -u viv -E node /app/dist/index.js >/dev/null 2>&1 &
-
   log "SmolVM machine is running."
 }
 
@@ -306,7 +302,7 @@ install_launchd_service() {
     exec_args="start -a ${CONTAINER_NAME}"
   else
     exec_path="$(command -v smolvm)"
-    exec_args="machine start --name ${CONTAINER_NAME}"
+    exec_args="machine monitor --name ${CONTAINER_NAME}"
   fi
 
   cat > "$plist_file" << EOF
@@ -350,7 +346,7 @@ install_systemd_service() {
   if [[ "$runtime" == "docker" ]]; then
     exec_start="$(command -v docker) start -a ${CONTAINER_NAME}"
   else
-    exec_start="$(command -v smolvm) machine start --name ${CONTAINER_NAME}"
+    exec_start="$(command -v smolvm) machine monitor --name ${CONTAINER_NAME}"
   fi
 
   local exec_stop
