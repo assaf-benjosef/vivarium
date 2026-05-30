@@ -42,5 +42,8 @@ RUN mkdir -p /workspace && chown viv:viv /workspace
 VOLUME /workspace
 EXPOSE 3000
 
+COPY scripts/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 USER viv
-CMD ["node", "/app/dist/index.js"]
+CMD ["/app/entrypoint.sh"]
