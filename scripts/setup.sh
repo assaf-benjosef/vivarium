@@ -259,7 +259,8 @@ smolvm_setup() {
     -e "VIVARIUM_NAME=${NAME}" \
     -e "PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium" \
     -e "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" \
-    --init "sh -c '/app/entrypoint.sh > /tmp/vivarium.log 2>&1 &'" \
+    --init "env > /tmp/vivarium.env" \
+    --init "sh -c 'set -a && . /tmp/vivarium.env && set +a && /app/entrypoint.sh &'" \
     || die "SmolVM machine creation failed."
 
   log "Starting SmolVM machine..."
