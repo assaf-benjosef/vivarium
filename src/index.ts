@@ -14,11 +14,11 @@ function setupContainer(): void {
       stdio: "ignore",
     });
   } catch {
-    // May already be configured
+    // Home dir may not be writable (e.g. SmolVM uid mismatch) — git -c flags below handle this
   }
 
   if (!existsSync(`${WORKSPACE}/.git`)) {
-    execSync(`git init && git add -A && git commit -m "Initial commit" --allow-empty`, {
+    execSync(`git init && git add -A && git -c user.name=Viv -c user.email=viv@vivarium.local commit -m "Initial commit" --allow-empty`, {
       cwd: WORKSPACE,
       stdio: "ignore",
     });
