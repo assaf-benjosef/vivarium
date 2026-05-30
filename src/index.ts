@@ -6,11 +6,9 @@ import { AgentRunner } from "./agent/runner.js";
 
 const WORKSPACE = "/workspace";
 const AUTO_SAVE_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+const IS_CONTAINER = existsSync(WORKSPACE);
 
-async function main() {
-  const config = loadConfig();
-
-  // Configure git identity for the container
+function setupContainer(): void {
   try {
     execSync('git config --global user.name "Viv" && git config --global user.email "viv@vivarium.local"', {
       stdio: "ignore",
@@ -19,7 +17,6 @@ async function main() {
     // May already be configured
   }
 
-  // Initialize git in workspace if needed
   if (!existsSync(`${WORKSPACE}/.git`)) {
     execSync(`git init && git add -A && git commit -m "Initial commit" --allow-empty`, {
       cwd: WORKSPACE,
@@ -28,7 +25,6 @@ async function main() {
     console.log("[vivarium] Initialized git in /workspace");
   }
 
-  // Copy skills into workspace if not present
   if (!existsSync(`${WORKSPACE}/.claude/skills`)) {
     execSync(`mkdir -p ${WORKSPACE}/.claude/skills && cp -r /app/skills/* ${WORKSPACE}/.claude/skills/`, {
       stdio: "ignore",
@@ -36,7 +32,6 @@ async function main() {
     console.log("[vivarium] Skills installed to /workspace/.claude/skills/");
   }
 
-  // Copy CLAUDE.md to workspace root if not present (SDK loads it from here)
   if (!existsSync(`${WORKSPACE}/CLAUDE.md`)) {
     execSync(`cp /app/workspace-template/CLAUDE.md ${WORKSPACE}/CLAUDE.md`, {
       stdio: "ignore",
@@ -44,7 +39,6 @@ async function main() {
     console.log("[vivarium] CLAUDE.md installed to /workspace/");
   }
 
-  // Run auto-start script if it exists
   const startScript = `${WORKSPACE}/.vivarium/start.sh`;
   if (existsSync(startScript)) {
     try {
@@ -55,20 +49,26 @@ async function main() {
     }
   }
 
-  // Periodic auto-save (every 15 minutes)
   setInterval(() => {
     try {
       execSync(
         'git add -A && git diff-index --quiet HEAD || git commit -m "auto-save"',
         { cwd: WORKSPACE, stdio: "ignore" }
       );
-    } catch {
-      // Ignore — workspace might not have changes
-    }
+    } catch {}
   }, AUTO_SAVE_INTERVAL_MS);
   console.log("[vivarium] Auto-save enabled (every 15 min)");
+}
 
-  // Start the agent runner and connect to hub
+async function main() {
+  const config = loadConfig();
+
+  if (IS_CONTAINER) {
+    setupContainer();
+  } else {
+    console.log("[vivarium] Running outside container, skipping workspace setup");
+  }
+
   const runner = new AgentRunner(config);
   const hub = new HubConnection(config, runner);
   await hub.connect();
