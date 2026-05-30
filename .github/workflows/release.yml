@@ -77,6 +77,9 @@ jobs:
     needs: docker
     runs-on: ubuntu-latest
     steps:
+      - name: Enable KVM
+        run: sudo usermod -aG kvm "$USER" && sudo chmod 666 /dev/kvm
+
       - name: Install SmolVM
         run: curl -sSL https://smolmachines.com/install.sh | bash
 
