@@ -63,23 +63,23 @@ done
 
 if [[ -z "$API_KEY" ]]; then
   printf "\n"
-  read -sp "Enter your Anthropic API key: " API_KEY
+  read -sp "Enter your Anthropic API key: " API_KEY < /dev/tty
   printf "\n"
   [[ -z "$API_KEY" ]] && die "API key is required."
 elif [[ -z "${__API_KEY_FROM_FLAG:-}" ]]; then
   # API_KEY came from env var, not --api-key flag — confirm with user
   masked="${API_KEY:0:12}...${API_KEY: -4}"
   printf "\n"
-  read -p "Found ANTHROPIC_API_KEY in environment ($masked). Use it? [Y/n] " use_env
+  read -p "Found ANTHROPIC_API_KEY in environment ($masked). Use it? [Y/n] " use_env < /dev/tty
   if [[ "$use_env" =~ ^[Nn]$ ]]; then
-    read -sp "Enter your Anthropic API key: " API_KEY
+    read -sp "Enter your Anthropic API key: " API_KEY < /dev/tty
     printf "\n"
     [[ -z "$API_KEY" ]] && die "API key is required."
   fi
 fi
 
 if [[ -z "$NAME" ]]; then
-  read -p "Enter a name for this vivarium [my-vivarium]: " NAME
+  read -p "Enter a name for this vivarium [my-vivarium]: " NAME < /dev/tty
   NAME="${NAME:-my-vivarium}"
 fi
 
@@ -155,7 +155,7 @@ docker_setup() {
   # Check for existing container with same name
   if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     warn "Container '$CONTAINER_NAME' already exists."
-    read -p "Remove it and start fresh? [y/N] " confirm
+    read -p "Remove it and start fresh? [y/N] " confirm < /dev/tty
     if [[ "$confirm" =~ ^[Yy]$ ]]; then
       docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1
     else
@@ -236,7 +236,7 @@ smolvm_setup() {
 
   if smolvm machine status --name "$CONTAINER_NAME" >/dev/null 2>&1; then
     warn "Machine '$CONTAINER_NAME' already exists."
-    read -p "Remove it and start fresh? [y/N] " confirm
+    read -p "Remove it and start fresh? [y/N] " confirm < /dev/tty
     if [[ "$confirm" =~ ^[Yy]$ ]]; then
       smolvm machine stop --name "$CONTAINER_NAME" 2>/dev/null || true
       smolvm machine delete "$CONTAINER_NAME" -f 2>/dev/null || true
