@@ -195,17 +195,30 @@ docker_setup() {
   log "Vivarium container is running."
 }
 
+# --- Detect architecture ---
+detect_arch() {
+  local arch
+  arch="$(uname -m)"
+  case "$arch" in
+    x86_64|amd64) echo "amd64" ;;
+    aarch64|arm64) echo "arm64" ;;
+    *) die "Unsupported architecture: $arch" ;;
+  esac
+}
+
 # --- Download pre-built SmolVM pack ---
 download_pack() {
   local version="$1"
-  local pack_file="vivarium.smolmachine"
+  local arch
+  arch="$(detect_arch)"
+  local pack_file="vivarium-${arch}.smolmachine"
   local version_dir="${PACK_CACHE_DIR}/${version}"
   local dest="${version_dir}/${pack_file}"
 
   mkdir -p "$version_dir"
 
   if [[ -f "$dest" ]] && [[ "$version" != "latest" ]]; then
-    log "Using cached pack: $dest" >&2
+    log "Using cached pack ($arch): $dest" >&2
     echo "$dest"
     return
   fi
@@ -217,7 +230,7 @@ download_pack() {
     download_url="${PACK_URL_BASE}/download/${version}/${pack_file}"
   fi
 
-  log "Downloading SmolVM pack ($version)..." >&2
+  log "Downloading SmolVM pack ($version, $arch)..." >&2
   curl -fSL --progress-bar -o "$dest" "$download_url" \
     || die "Failed to download pack from $download_url. Use --docker instead."
 
