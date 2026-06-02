@@ -4,7 +4,7 @@ set -euo pipefail
 # Vivarium Setup Script
 # Installs and runs a vivarium using Docker (default) or SmolVM.
 
-DEFAULT_HUB_URL="wss://hub.vivarium.run/ws"
+DEFAULT_HUB_URL="wss://app.vivarium.run/ws"
 GHCR_IMAGE="ghcr.io/assaf-benjosef/vivarium"
 PACK_URL_BASE="https://github.com/assaf-benjosef/vivarium/releases"
 PACK_CACHE_DIR="${HOME}/.cache/vivarium/packs"
