@@ -23,7 +23,7 @@ function setupWorkspace(): void {
     stdio: "ignore",
   });
 
-  execSync(`mkdir -p ${WORKSPACE}/.claude/skills && cp -r /app/skills/* ${WORKSPACE}/.claude/skills/`, {
+  execSync(`rm -rf ${WORKSPACE}/.claude/skills && mkdir -p ${WORKSPACE}/.claude/skills && cp -r /app/skills/* ${WORKSPACE}/.claude/skills/`, {
     stdio: "ignore",
   });
 
