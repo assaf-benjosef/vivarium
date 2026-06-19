@@ -23,12 +23,9 @@ function setupWorkspace(): void {
     stdio: "ignore",
   });
 
-  if (!existsSync(`${WORKSPACE}/.claude/skills`)) {
-    execSync(`mkdir -p ${WORKSPACE}/.claude/skills && cp -r /app/skills/* ${WORKSPACE}/.claude/skills/`, {
-      stdio: "ignore",
-    });
-    console.log("[vivarium] Skills installed to /workspace/.claude/skills/");
-  }
+  execSync(`mkdir -p ${WORKSPACE}/.claude/skills && cp -r /app/skills/* ${WORKSPACE}/.claude/skills/`, {
+    stdio: "ignore",
+  });
 
   if (!existsSync(`${WORKSPACE}/CLAUDE.md`)) {
     execSync(`cp /app/workspace-template/CLAUDE.md ${WORKSPACE}/CLAUDE.md`, {
