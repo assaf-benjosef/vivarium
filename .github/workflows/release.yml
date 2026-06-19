@@ -69,56 +69,13 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  pack:
-    needs: docker
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - arch: arm64
-            oci_platform: linux/arm64
-          - arch: amd64
-            oci_platform: linux/amd64
-    steps:
-      - name: Enable KVM and install dependencies
-        run: |
-          sudo chmod 666 /dev/kvm
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq libvirglrenderer1 > /dev/null
-
-      - name: Install SmolVM
-        run: curl -sSL https://smolmachines.com/install.sh | bash
-
-      - name: Create SmolVM pack
-        run: |
-          smolvm pack create \
-            --image "ghcr.io/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.num }}" \
-            --oci-platform ${{ matrix.oci_platform }} \
-            --cpus 2 \
-            --mem 2048 \
-            -o vivarium-${{ matrix.arch }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: smolmachine-pack-${{ matrix.arch }}
-          path: vivarium-${{ matrix.arch }}.smolmachine
-          retention-days: 1
-
   release:
-    needs: [docker, pack]
+    needs: docker
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: smolmachine-pack-arm64
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: smolmachine-pack-amd64
 
       - name: Create GitHub Release
         env:
@@ -126,7 +83,5 @@ jobs:
         run: |
           TAG="${{ needs.docker.outputs.version }}"
           gh release create "$TAG" \
-            vivarium-arm64.smolmachine \
-            vivarium-amd64.smolmachine \
             --title "Vivarium ${TAG}" \
             --generate-notes

@@ -3,7 +3,7 @@ name: serving-apps
 description: >-
   Guides how to serve web applications on port 3000 inside Vivarium.
   Covers static sites, Node.js servers, and Python servers. Also handles
-  creating the auto-start script for container restarts. Use when building
+  creating the auto-start script for microVM restarts. Use when building
   or deploying any web app, or when the user's app isn't accessible.
 ---
 
@@ -40,7 +40,7 @@ npm start &
 ```
 
 Make it executable: `chmod +x /workspace/.vivarium/start.sh`
-This runs automatically when the container restarts.
+This runs automatically when the microVM restarts.
 
 ## Troubleshooting
 - App not loading? Check if the process is running: `lsof -i :3000`

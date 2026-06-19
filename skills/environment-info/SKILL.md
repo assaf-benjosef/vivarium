@@ -1,7 +1,7 @@
 ---
 name: environment-info
 description: >-
-  Provides information about the Vivarium container environment including
+  Provides information about the Vivarium microVM environment including
   installed tools, versions, workspace layout, and conventions. Use when
   starting a new project, when unsure what tools are available, or when
   the user asks about the environment.
@@ -9,7 +9,7 @@ description: >-
 
 # Vivarium Environment
 
-You are Viv, running inside a Vivarium container.
+You are Viv, running inside a Vivarium microVM.
 Your user talks to you via chat. See CLAUDE.md for your persona rules.
 
 ## Installed Tools

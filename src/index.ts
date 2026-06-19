@@ -6,9 +6,9 @@ import { AgentRunner } from "./agent/runner.js";
 
 const WORKSPACE = "/workspace";
 const AUTO_SAVE_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
-const IS_CONTAINER = existsSync(WORKSPACE);
+const HAS_WORKSPACE = existsSync(WORKSPACE);
 
-function setupContainer(): void {
+function setupWorkspace(): void {
   if (!existsSync(`${WORKSPACE}/.git`)) {
     execSync(`git init && git add -A && git -c user.name=Viv -c user.email=viv@vivarium.local commit -m "Initial commit" --allow-empty`, {
       cwd: WORKSPACE,
@@ -65,10 +65,10 @@ process.on("SIGTERM", () => {
 async function main() {
   const config = loadConfig();
 
-  if (IS_CONTAINER) {
-    setupContainer();
+  if (HAS_WORKSPACE) {
+    setupWorkspace();
   } else {
-    console.log("[vivarium] Running outside container, skipping workspace setup");
+    console.log("[vivarium] Running outside microVM, skipping workspace setup");
   }
 
   const runner = new AgentRunner(config);

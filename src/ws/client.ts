@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { execSync } from "node:child_process";
+
 import { resolve, dirname } from "node:path";
 import { HubMessageSchema, type VivariumMessage, type HubMessage } from "./protocol.js";
 import type { AgentRunner } from "../agent/runner.js";
@@ -143,7 +143,6 @@ export class HubConnection {
       case "shutdown": {
         console.log("[ws] Shutdown requested by hub");
         this.ws?.close(1000, "shutdown");
-        try { execSync("/sbin/poweroff -f", { stdio: "ignore", timeout: 5000 }); } catch {}
         process.exit(0);
       }
     }

@@ -2,13 +2,13 @@
 
 ## What this is
 
-The Vivarium agent runtime. A Node.js/TypeScript process that runs inside a microVM (SmolVM) or Docker container alongside the user's app. It receives messages from the hub via WebSocket, drives Claude via the Agent SDK, and has full access to the app's filesystem, process, and a Chromium browser for screenshots.
+The Vivarium agent runtime. A Node.js/TypeScript process that runs inside a microsandbox microVM alongside the user's app. It receives messages from the hub via WebSocket, drives Claude via the Agent SDK, and has full access to the app's filesystem, process, and a Chromium browser for screenshots.
 
 ## Architecture
 
 ```
 src/
-  index.ts          — Entry point: container setup, auto-save loop, WebSocket + Agent wiring
+  index.ts          — Entry point: workspace setup, auto-save loop, WebSocket + Agent wiring
   config.ts         — Env var loading and validation
   agent/
     runner.ts       — AgentRunner: drives Claude Agent SDK, manages turns and conversation
@@ -18,7 +18,7 @@ src/
     protocol.ts     — Message types shared with the hub
 skills/             — Markdown instruction files copied into /workspace/.claude/skills/
 workspace-template/ — Default CLAUDE.md for new workspaces
-scripts/            — Setup scripts for SmolVM and Docker deployment
+scripts/            — Bootstrap installer and microVM entrypoint
 ```
 
 ## Key patterns
@@ -26,9 +26,10 @@ scripts/            — Setup scripts for SmolVM and Docker deployment
 - The agent connects **outbound** to the hub — no inbound ports needed
 - Auto-save commits to git every 15 minutes (`/workspace` is always a git repo)
 - Skills are persistent markdown instructions in `/workspace/.claude/skills/`
-- The app always runs on port 3000 inside the container
+- The app always runs on port 3000 inside the microVM
 - Screenshots use Puppeteer with Chromium (headless)
-- SmolVM runtime uses `smolvm pack` format (v0.1.7+); Docker is the fallback
+- microsandbox is the runtime (`@vivarium/cli` manages the sandbox lifecycle)
+- `@vivarium/cli` (`viv` command) manages sandbox lifecycle from the host
 
 ## Environment
 

@@ -1,6 +1,6 @@
 # Vivarium
 
-An AI agent that lives inside a microVM or Docker container alongside your app. It has full access to the filesystem, the running process, and a browser — write code, run it, screenshot it, and auto-save to git. You talk to it from your phone; it builds while you do anything else.
+An AI agent that lives inside a microsandbox microVM alongside your app. It has full access to the filesystem, the running process, and a browser — write code, run it, screenshot it, and auto-save to git. You talk to it from your phone; it builds while you do anything else.
 
 ## How it works
 
@@ -34,17 +34,18 @@ The vivarium connects *outbound* to the hub via WebSocket — no port opening or
 
 ### Prerequisites
 
-- Docker (or SmolVM)
-- A running [vivarium-hub](https://github.com/assaf-benjosef/vivarium-hub)
 - An [Anthropic API key](https://console.anthropic.com/)
+- A running [vivarium-hub](https://github.com/assaf-benjosef/vivarium-hub)
 
-### One-command install (SmolVM)
+### One-command install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/assaf-benjosef/vivarium/main/scripts/setup.sh | bash
+curl -fsSL https://vivarium.run/install | bash -s -- --token <TOKEN>
 ```
 
-### Docker
+This installs the [`@vivarium/cli`](https://github.com/assaf-benjosef/vivarium-cli) (`viv` command), which uses microsandbox to run the agent in a lightweight microVM.
+
+### Docker (fallback)
 
 ```bash
 docker build -t vivarium .
@@ -91,6 +92,7 @@ npm run dev   # needs ANTHROPIC_API_KEY, HUB_URL, HUB_TOKEN
 ## Related
 
 - [vivarium-hub](https://github.com/assaf-benjosef/vivarium-hub) — message broker + web console
+- [vivarium-cli](https://github.com/assaf-benjosef/vivarium-cli) — the `viv` CLI for managing sandboxes
 - [vivarium.run](https://vivarium.run) — landing page & waitlist
 
 ## License

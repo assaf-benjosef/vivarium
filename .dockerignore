@@ -6,6 +6,6 @@ dist
 .claude
 scripts
 !scripts/entrypoint.sh
-*.smolfile
+
 README.md
 vitest.config.ts
