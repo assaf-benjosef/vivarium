@@ -13,19 +13,22 @@ Always serve on port 3000. This is the only port exposed to the user.
 
 ## Quick Patterns
 
+IMPORTANT: Always run servers in the background with `&` so the Bash tool
+returns immediately. A foreground server blocks the agent forever.
+
 ### Static site (HTML/CSS/JS only)
 ```
-npx serve -l 3000 .
+npx serve -l 3000 /workspace &
 ```
 
 ### Express server
 ```
-node server.js    # (must listen on port 3000)
+node server.js &    # (must listen on port 3000)
 ```
 
 ### Python server
 ```
-python3 -m http.server 3000
+python3 -m http.server 3000 &
 ```
 
 ## Auto-start Script
