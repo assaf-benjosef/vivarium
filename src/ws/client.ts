@@ -5,6 +5,7 @@ import { resolve, dirname } from "node:path";
 import { HubMessageSchema, type VivariumMessage, type HubMessage } from "./protocol.js";
 import type { AgentRunner } from "../agent/runner.js";
 import type { Config } from "../config.js";
+import { shutdownVM } from "../shutdown.js";
 
 const MAX_RECONNECT_DELAY_MS = 60_000;
 const HEARTBEAT_INTERVAL_MS = 30_000;
@@ -143,7 +144,7 @@ export class HubConnection {
       case "shutdown": {
         console.log("[ws] Shutdown requested by hub");
         this.ws?.close(1000, "shutdown");
-        process.exit(0);
+        shutdownVM();
       }
     }
   }

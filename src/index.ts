@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { loadConfig } from "./config.js";
 import { HubConnection } from "./ws/client.js";
 import { AgentRunner } from "./agent/runner.js";
+import { shutdownVM } from "./shutdown.js";
 
 const WORKSPACE = "/workspace";
 const AUTO_SAVE_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
@@ -59,7 +60,7 @@ function setupWorkspace(): void {
 
 process.on("SIGTERM", () => {
   console.log("[vivarium] SIGTERM received, shutting down");
-  process.exit(0);
+  shutdownVM();
 });
 
 async function main() {

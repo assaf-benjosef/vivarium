@@ -20,9 +20,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# Install ngrok
+# Install cloudflared for public URL tunnels
 RUN ARCH=$(dpkg --print-architecture) && \
-    curl -sSL "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-${ARCH}.tgz" | tar xz -C /usr/local/bin
+    curl -sSL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${ARCH}.deb" -o /tmp/cloudflared.deb && \
+    dpkg -i /tmp/cloudflared.deb && rm /tmp/cloudflared.deb
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true

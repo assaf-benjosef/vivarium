@@ -42,6 +42,11 @@ npm start &
 Make it executable: `chmod +x /workspace/.vivarium/start.sh`
 This runs automatically when the microVM restarts.
 
+## Share a public URL
+
+Once the app is serving on port 3000, create a public URL with cloudflared
+so the user can see it in their browser. See the **sharing-urls** skill.
+
 ## Troubleshooting
 - App not loading? Check if the process is running: `lsof -i :3000`
 - Wrong port? Grep for port references: `grep -r "port\|PORT\|listen" .`
