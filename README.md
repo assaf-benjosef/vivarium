@@ -28,14 +28,14 @@ You (chat) ──→ vivarium-hub (message broker) ──→ WebSocket ──→
                                                                     └── App running on :3000
 ```
 
-The vivarium connects *outbound* to the hub via WebSocket — no port opening or firewall config needed. Your API key never leaves your machine.
+The vivarium connects *outbound* to the hub via WebSocket — no port opening or firewall config needed. Your API key is never sent to the hub — it stays in your microVM and goes directly to Anthropic.
 
 ## Quick start
 
 ### Prerequisites
 
 - An [Anthropic API key](https://console.anthropic.com/)
-- A running [vivarium-hub](https://github.com/assaf-benjosef/vivarium-hub)
+- A hub account (hosted at [app.vivarium.run](https://app.vivarium.run), or [self-host](https://github.com/assaf-benjosef/vivarium-hub))
 
 ### One-command install
 
@@ -44,22 +44,6 @@ curl -fsSL https://vivarium.run/install | bash -s -- --token <TOKEN>
 ```
 
 This installs the [`@vivarium/cli`](https://github.com/assaf-benjosef/vivarium-cli) (`viv` command), which uses microsandbox to run the agent in a lightweight microVM.
-
-### Docker (fallback)
-
-```bash
-docker build -t vivarium .
-
-docker run -d \
-  -e ANTHROPIC_API_KEY=sk-ant-... \
-  -e HUB_URL=wss://your-hub:8080/ws \
-  -e HUB_TOKEN=eyJ... \
-  -e VIVARIUM_NAME=my-app \
-  -v vivarium-data:/workspace \
-  -p 3000:3000 \
-  --name vivarium \
-  vivarium
-```
 
 ### Environment variables
 

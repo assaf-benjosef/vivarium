@@ -28,8 +28,7 @@ scripts/            — Bootstrap installer and microVM entrypoint
 - Skills are persistent markdown instructions in `/workspace/.claude/skills/`
 - The app always runs on port 3000 inside the microVM
 - Screenshots use Puppeteer with Chromium (headless)
-- microsandbox is the runtime (`@vivarium/cli` manages the sandbox lifecycle)
-- `@vivarium/cli` (`viv` command) manages sandbox lifecycle from the host
+- microsandbox is the runtime; `@vivarium/cli` (`viv` command) manages sandbox lifecycle from the host
 
 ## Environment
 
@@ -46,6 +45,7 @@ scripts/            — Bootstrap installer and microVM entrypoint
 - No database — state lives in git (workspace) and the hub (message history)
 - WebSocket protocol is JSON messages defined in `ws/protocol.ts`
 
-## Related repo
+## Related repos
 
 - [vivarium-hub](https://github.com/assaf-benjosef/vivarium-hub) — the message broker, web console, and landing page
+- [vivarium-cli](https://github.com/assaf-benjosef/vivarium-cli) — the `viv` CLI for managing microsandbox instances
